@@ -1,29 +1,25 @@
-const logger = require('../utils/logger');
+import logger from '../utils/logger.js';
 
-exports.errorHandler = (err, req, res, next) => {
-  logger.error(`${err.message} — ${req.method} ${req.originalUrl}`);
+export const errorHandler = (err, req, res, next) => {
+  let statusCode = err.statusCode || 500;
+  let message    = err.message    || 'Internal Server Error';
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const errors = Object.values(err.errors).map(e => e.message);
-    return res.status(400).json({ success: false, message: 'Validation failed.', errors });
+    statusCode = 400;
+    message = Object.values(err.errors).map(e => e.message).join(', ');
   }
-
   // Mongoose duplicate key
   if (err.code === 11000) {
+    statusCode = 409;
     const field = Object.keys(err.keyValue)[0];
-    return res.status(409).json({ success: false, message: `${field} already exists.` });
+    message = `${field} already exists.`;
   }
-
   // JWT errors
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({ success: false, message: 'Invalid token.' });
-  }
+  if (err.name === 'JsonWebTokenError') { statusCode = 401; message = 'Invalid token.'; }
+  if (err.name === 'TokenExpiredError') { statusCode = 401; message = 'Token expired.'; }
 
-  const status = err.statusCode || 500;
-  res.status(status).json({
-    success: false,
-    message: err.message || 'Internal server error.',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
+  logger.error(`${statusCode} ${message}`, { path: req.path, method: req.method });
+
+  res.status(statusCode).json({ success: false, message });
 };

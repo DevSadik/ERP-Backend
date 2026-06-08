@@ -1,13 +1,19 @@
-const router  = require('express').Router();
-const ctrl    = require('../controllers/shop.controller');
+'use strict';
+const router   = require('express').Router();
+const auth     = require('../controllers/shopAuth.controller');
+const ctrl     = require('../controllers/shop.controller');
 const { protectShop } = require('../middleware/shopAuth');
-const upload  = require('../middleware/upload');
+const upload   = require('../middleware/upload');
 
-// Public — no auth needed
-router.post('/register', ctrl.shopRegister);
-router.post('/login',    ctrl.shopLogin);
+// ── Public auth routes ────────────────────────────────────────────────────────
+router.post('/register',              auth.register);
+router.post('/login',                 auth.login);
+router.get('/verify-email/:token',    auth.verifyEmail);
+router.post('/resend-verification',   auth.resendVerification);
+router.post('/forgot-password',       auth.forgotPassword);
+router.post('/reset-password/:token', auth.resetPassword);
 
-// Protected — need shop JWT
+// ── Protected routes (shop JWT required) ─────────────────────────────────────
 router.use(protectShop);
 
 router.get('/me',  ctrl.shopMe);
@@ -35,10 +41,10 @@ router.get('/sales',  ctrl.shopGetSales);
 router.post('/sales', ctrl.shopCreateSale);
 
 // Credit Ledger
-router.get('/ledger',             ctrl.shopGetLedger);
-router.post('/ledger',            ctrl.shopCreateLedgerEntry);
-router.delete('/ledger/:id',      ctrl.shopDeleteLedgerEntry);
-router.get('/ledger/customers',   ctrl.shopGetCustomers);
+router.get('/ledger',           ctrl.shopGetLedger);
+router.post('/ledger',          ctrl.shopCreateLedgerEntry);
+router.delete('/ledger/:id',    ctrl.shopDeleteLedgerEntry);
+router.get('/ledger/customers', ctrl.shopGetCustomers);
 
 // Suppliers
 router.get('/suppliers',  ctrl.shopGetSuppliers);

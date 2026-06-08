@@ -1,27 +1,28 @@
-const multer = require('multer');
-const path   = require('path');
-const fs     = require('fs');
+import multer from 'multer';
+import path   from 'path';
+import { fileURLToPath } from 'url';
 
-const uploadDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, uploadDir),
-  filename:    (_, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
+  destination: (req, file, cb) => cb(null, path.join(__dirname, '../../uploads')),
+  filename:    (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`);
   },
 });
 
-const fileFilter = (_, file, cb) => {
-  const allowed = /jpeg|jpg|png|webp/;
-  const valid = allowed.test(path.extname(file.originalname).toLowerCase())
-             && allowed.test(file.mimetype);
-  valid ? cb(null, true) : cb(new Error('Only image files are allowed.'));
+const fileFilter = (req, file, cb) => {
+  const allowed = /jpeg|jpg|png|webp|svg/;
+  if (allowed.test(path.extname(file.originalname).toLowerCase()))
+    return cb(null, true);
+  cb(new Error('Only images allowed.'));
 };
 
-module.exports = multer({
+const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
+
+export default upload;
