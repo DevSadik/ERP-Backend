@@ -1,64 +1,174 @@
 import nodemailer from 'nodemailer';
+import logger     from './logger.js';
 
-const createTransporter = () => nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-const FRONTEND = process.env.FRONTEND_URL || 'https://erp-forntend-ruddy.vercel.app/';
+// ── Smart transporter — works with Gmail App Password OR Resend ───────────────
+const createTransporter = () => {
+  // Option 1: Resend SMTP (recommended for production)
+  if (process.env.RESEND_API_KEY) {
+    return nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY,
+      },
+    });
+  }
 
-const emailTemplate = (title, content) => `
-  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;background:#f9f9f9;border-radius:12px;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#10b981,#065f46);padding:32px;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:24px;">MiniBazar ERP</h1>
-      <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:14px;">মিষ্টান্ন ইনভেন্টরি ম্যানেজমেন্ট</p>
+  // Option 2: Gmail App Password
+  if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
+    });
+  }
+
+  // Option 3: Generic SMTP (Brevo, Mailgun, etc.)
+  if (process.env.SMTP_HOST) {
+    return nodemailer.createTransport({
+      host:   process.env.SMTP_HOST,
+      port:   +process.env.SMTP_PORT || 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+
+  // Option 4: Dev only — log to console instead of sending
+  logger.warn('⚠️ No email provider configured. Emails will be logged to console only.');
+  return null;
+};
+
+// ── FROM address ──────────────────────────────────────────────────────────────
+const getFromAddress = () => {
+  if (process.env.RESEND_API_KEY)
+    return process.env.FROM_EMAIL || 'MiniBazar ERP <onboarding@resend.dev>';
+  if (process.env.GMAIL_USER)
+    return `"MiniBazar ERP" <${process.env.GMAIL_USER}>`;
+  return process.env.FROM_EMAIL || '"MiniBazar ERP" <noreply@minibazar.com>';
+};
+
+// ── Email template ────────────────────────────────────────────────────────────
+const template = (content) => `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+  <div style="max-width:520px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#10b981,#065f46);padding:28px 32px;text-align:center;">
+      <h1 style="color:#ffffff;margin:0;font-size:22px;font-weight:900;letter-spacing:-0.5px;">MiniBazar ERP</h1>
+      <p style="color:rgba(255,255,255,0.75);margin:6px 0 0;font-size:13px;">মিষ্টান্ন ইনভেন্টরি ম্যানেজমেন্ট</p>
     </div>
     <div style="padding:32px;">
       ${content}
-      <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
-      <p style="color:#bbb;font-size:11px;text-align:center;">© 2026 MiniBazar ERP by Wahidsadik Aditto. All rights reserved.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:28px 0 20px;">
+      <p style="color:#aaa;font-size:11px;text-align:center;margin:0;">
+        © 2026 MiniBazar ERP by Wahidsadik Aditto. All rights reserved.
+      </p>
     </div>
   </div>
-`;
+</body>
+</html>`;
 
+// ── Send helper ───────────────────────────────────────────────────────────────
+const sendMail = async ({ to, subject, html }) => {
+  const transporter = createTransporter();
+
+  // Dev mode — no email provider
+  if (!transporter) {
+    logger.info(`📧 [DEV EMAIL] To: ${to} | Subject: ${subject}`);
+    logger.info(`📧 [DEV EMAIL] Content preview logged (no provider configured)`);
+    return;
+  }
+
+  try {
+    const info = await transporter.sendMail({
+      from: getFromAddress(),
+      to, subject, html,
+    });
+    logger.info(`✅ Email sent to ${to} | MessageId: ${info.messageId}`);
+  } catch (error) {
+    logger.error(`❌ Email send failed to ${to}: ${error.message}`);
+    throw error; // re-throw so caller can handle
+  }
+};
+
+// ── Verification Email ────────────────────────────────────────────────────────
 export const sendVerificationEmail = async (email, name, token) => {
   const link = `${FRONTEND}/verify-email?token=${token}`;
-  await createTransporter().sendMail({
-    from: `"MiniBazar ERP" <${process.env.GMAIL_USER}>`,
+
+  await sendMail({
     to: email,
     subject: '✅ MiniBazar ERP — ইমেইল যাচাই করুন',
-    html: emailTemplate('ইমেইল যাচাই', `
-      <h2 style="color:#111;margin:0 0 12px;">স্বাগতম, ${name}!</h2>
-      <p style="color:#444;line-height:1.6;">আপনার MiniBazar ERP অ্যাকাউন্ট তৈরি হয়েছে। ব্যবহার শুরু করতে ইমেইল যাচাই করুন।</p>
+    html: template(`
+      <h2 style="color:#111;margin:0 0 12px;font-size:20px;">স্বাগতম, ${name}! 🎉</h2>
+      <p style="color:#555;line-height:1.7;margin:0 0 20px;">
+        আপনার <strong>MiniBazar ERP</strong> অ্যাকাউন্ট তৈরি হয়েছে।
+        ব্যবহার শুরু করতে নিচের বাটনে ক্লিক করে ইমেইল যাচাই করুন।
+      </p>
       <div style="text-align:center;margin:28px 0;">
-        <a href="${link}" style="background:#10b981;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block;">
+        <a href="${link}"
+           style="background:#10b981;color:#ffffff;padding:14px 36px;border-radius:8px;
+                  text-decoration:none;font-weight:bold;font-size:16px;
+                  display:inline-block;letter-spacing:0.3px;">
           ✅ ইমেইল যাচাই করুন
         </a>
       </div>
-      <p style="color:#888;font-size:13px;">এই link ২৪ ঘণ্টা পর মেয়াদ শেষ হবে।</p>
+      <p style="color:#888;font-size:13px;margin:0 0 8px;">
+        অথবা এই লিংক browser-এ paste করুন:
+      </p>
+      <p style="background:#f4f4f4;border-radius:6px;padding:10px 12px;font-size:12px;
+                color:#555;word-break:break-all;margin:0 0 20px;">${link}</p>
+      <div style="background:#fff8e1;border:1px solid #ffd54f;border-radius:8px;padding:12px 14px;">
+        <p style="color:#795548;font-size:13px;margin:0;">
+          ⏰ এই link <strong>২৪ ঘণ্টা</strong> পর মেয়াদ শেষ হবে।
+          Email না পেলে <strong>Spam/Junk</strong> ফোল্ডার চেক করুন।
+        </p>
+      </div>
     `),
   });
 };
 
+// ── Password Reset Email ──────────────────────────────────────────────────────
 export const sendPasswordResetEmail = async (email, name, token) => {
   const link = `${FRONTEND}/shop/reset-password?token=${token}`;
-  await createTransporter().sendMail({
-    from: `"MiniBazar ERP" <${process.env.GMAIL_USER}>`,
+
+  await sendMail({
     to: email,
     subject: '🔑 MiniBazar ERP — পাসওয়ার্ড রিসেট করুন',
-    html: emailTemplate('পাসওয়ার্ড রিসেট', `
-      <h2 style="color:#111;margin:0 0 12px;">হ্যালো, ${name}!</h2>
-      <p style="color:#444;line-height:1.6;">আপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন। নিচের বাটনে ক্লিক করুন।</p>
+    html: template(`
+      <h2 style="color:#111;margin:0 0 12px;font-size:20px;">হ্যালো, ${name}!</h2>
+      <p style="color:#555;line-height:1.7;margin:0 0 20px;">
+        আপনি পাসওয়ার্ড রিসেটের অনুরোধ করেছেন।
+        নিচের বাটনে ক্লিক করে নতুন পাসওয়ার্ড দিন।
+      </p>
       <div style="text-align:center;margin:28px 0;">
-        <a href="${link}" style="background:#10b981;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block;">
+        <a href="${link}"
+           style="background:#10b981;color:#ffffff;padding:14px 36px;border-radius:8px;
+                  text-decoration:none;font-weight:bold;font-size:16px;
+                  display:inline-block;">
           🔑 নতুন পাসওয়ার্ড দিন
         </a>
       </div>
-      <p style="color:#888;font-size:13px;">এই link ১ ঘণ্টা পর মেয়াদ শেষ হবে।</p>
-      <p style="color:#888;font-size:13px;">আপনি এই অনুরোধ না করলে এই email উপেক্ষা করুন।</p>
+      <p style="color:#888;font-size:13px;margin:0 0 8px;">
+        অথবা এই লিংক browser-এ paste করুন:
+      </p>
+      <p style="background:#f4f4f4;border-radius:6px;padding:10px 12px;font-size:12px;
+                color:#555;word-break:break-all;margin:0 0 20px;">${link}</p>
+      <div style="background:#fce4ec;border:1px solid #f48fb1;border-radius:8px;padding:12px 14px;">
+        <p style="color:#880e4f;font-size:13px;margin:0;">
+          ⏰ এই link <strong>১ ঘণ্টা</strong> পর মেয়াদ শেষ হবে।
+          আপনি এই অনুরোধ না করলে এই email উপেক্ষা করুন।
+        </p>
+      </div>
     `),
   });
 };

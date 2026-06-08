@@ -19,6 +19,5 @@ customerSchema.pre('save', function(next) {
 
 customerSchema.index({ shop: 1, name: 1 });
 customerSchema.index({ shop: 1, phone: 1 });
-customerSchema.index({ publicToken: 1 });
 
 export default mongoose.model('Customer', customerSchema);

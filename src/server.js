@@ -23,6 +23,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app        = express();
 const httpServer = http.createServer(app);
 
+// Trust proxy — required for Render, Vercel, Heroku, Nginx etc.
+app.set('trust proxy', 1);
+
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 const io = new Server(httpServer, {
   cors: { origin: '*', methods: ['GET','POST'] },

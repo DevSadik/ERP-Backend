@@ -166,3 +166,36 @@ router.post('/setup-admin', async (req, res, next) => {
 });
 
 export default router;
+
+// ── Test Email (admin only — remove after testing) ────────────────────────────
+router.post('/test-email', async (req, res, next) => {
+  try {
+    const { to } = req.body;
+    if (!to) return res.status(400).json({ success: false, message: 'Provide "to" email.' });
+
+    const { sendVerificationEmail } = await import('../utils/emailService.js');
+    await sendVerificationEmail(to, 'Test User', 'test-token-12345');
+
+    res.json({
+      success: true,
+      message: `Test email sent to ${to}`,
+      config: {
+        hasResend: !!process.env.RESEND_API_KEY,
+        hasGmail:  !!(process.env.GMAIL_USER && process.env.GMAIL_PASS),
+        hasSmtp:   !!process.env.SMTP_HOST,
+        frontendUrl: process.env.FRONTEND_URL || 'NOT SET',
+      },
+    });
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      message: e.message,
+      config: {
+        hasResend: !!process.env.RESEND_API_KEY,
+        hasGmail:  !!(process.env.GMAIL_USER && process.env.GMAIL_PASS),
+        hasSmtp:   !!process.env.SMTP_HOST,
+        frontendUrl: process.env.FRONTEND_URL || 'NOT SET',
+      },
+    });
+  }
+});
