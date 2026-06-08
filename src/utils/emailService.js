@@ -8,7 +8,7 @@ const createTransporter = () => nodemailer.createTransport({
   },
 });
 
-const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND = process.env.FRONTEND_URL || 'https://erp-forntend-ruddy.vercel.app/';
 
 const emailTemplate = (title, content) => `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;background:#f9f9f9;border-radius:12px;overflow:hidden;">
