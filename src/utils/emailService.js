@@ -1,60 +1,10 @@
-import nodemailer from 'nodemailer';
-import logger     from './logger.js';
+import { Resend } from 'resend';
+import logger from './logger.js';
 
 const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FROM     = process.env.FROM_EMAIL   || 'MiniBazar ERP <onboarding@resend.dev>';
 
-// ── Smart transporter — works with Gmail App Password OR Resend ───────────────
-const createTransporter = () => {
-  // Option 1: Resend SMTP (recommended for production)
-  if (process.env.RESEND_API_KEY) {
-    return nodemailer.createTransport({
-      host: 'smtp.resend.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: 'resend',
-        pass: process.env.RESEND_API_KEY,
-      },
-    });
-  }
-
-  // Option 2: Gmail App Password
-  if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
-    });
-  }
-
-  // Option 3: Generic SMTP (Brevo, Mailgun, etc.)
-  if (process.env.SMTP_HOST) {
-    return nodemailer.createTransport({
-      host:   process.env.SMTP_HOST,
-      port:   +process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  }
-
-  // Option 4: Dev only — log to console instead of sending
-  logger.warn('⚠️ No email provider configured. Emails will be logged to console only.');
-  return null;
-};
-
-// ── FROM address ──────────────────────────────────────────────────────────────
-const getFromAddress = () => {
-  if (process.env.RESEND_API_KEY)
-    return process.env.FROM_EMAIL || 'MiniBazar ERP <onboarding@resend.dev>';
-  if (process.env.GMAIL_USER)
-    return `"MiniBazar ERP" <${process.env.GMAIL_USER}>`;
-  return process.env.FROM_EMAIL || '"MiniBazar ERP" <noreply@minibazar.com>';
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── Email template ────────────────────────────────────────────────────────────
 const template = (content) => `
@@ -80,25 +30,20 @@ const template = (content) => `
 
 // ── Send helper ───────────────────────────────────────────────────────────────
 const sendMail = async ({ to, subject, html }) => {
-  const transporter = createTransporter();
-
-  // Dev mode — no email provider
-  if (!transporter) {
+  if (!process.env.RESEND_API_KEY) {
+    logger.warn('⚠️  RESEND_API_KEY not set — email logged to console only.');
     logger.info(`📧 [DEV EMAIL] To: ${to} | Subject: ${subject}`);
-    logger.info(`📧 [DEV EMAIL] Content preview logged (no provider configured)`);
     return;
   }
 
-  try {
-    const info = await transporter.sendMail({
-      from: getFromAddress(),
-      to, subject, html,
-    });
-    logger.info(`✅ Email sent to ${to} | MessageId: ${info.messageId}`);
-  } catch (error) {
+  const { data, error } = await resend.emails.send({ from: FROM, to, subject, html });
+
+  if (error) {
     logger.error(`❌ Email send failed to ${to}: ${error.message}`);
-    throw error; // re-throw so caller can handle
+    throw new Error(error.message);
   }
+
+  logger.info(`✅ Email sent to ${to} | Id: ${data.id}`);
 };
 
 // ── Verification Email ────────────────────────────────────────────────────────
