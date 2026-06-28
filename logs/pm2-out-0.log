@@ -1,0 +1,18 @@
+2026-06-27T00:20:17: 2026-06-27 00:20:17 [[31merror[39m]: 💥 Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:17: 2026-06-27 00:20:17 [[31merror[39m]: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:17:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:17:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:17:     at node:net:2206:7
+2026-06-27T00:20:17:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+2026-06-27T00:20:31: 2026-06-27 00:20:31 [[31merror[39m]: 💥 Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:31: 2026-06-27 00:20:31 [[31merror[39m]: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:31:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:31:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:31:     at node:net:2206:7
+2026-06-27T00:20:31:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+2026-06-27T00:20:47: 2026-06-27 00:20:47 [[31merror[39m]: 💥 Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:47: 2026-06-27 00:20:47 [[31merror[39m]: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:47:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:47:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:47:     at node:net:2206:7
+2026-06-27T00:20:47:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21)

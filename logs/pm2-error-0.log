@@ -1,0 +1,49 @@
+2026-06-27T00:20:16: (node:7294) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:20:16: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:20:17: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:17:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:17:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:17:     at node:net:2206:7
+2026-06-27T00:20:17:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+2026-06-27T00:20:17:   code: 'EADDRINUSE',
+2026-06-27T00:20:17:   errno: -98,
+2026-06-27T00:20:17:   syscall: 'listen',
+2026-06-27T00:20:17:   address: '0.0.0.0',
+2026-06-27T00:20:17:   port: 5000
+2026-06-27T00:20:17: }
+2026-06-27T00:20:30: (node:7330) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:20:30: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:20:31: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:31:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:31:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:31:     at node:net:2206:7
+2026-06-27T00:20:31:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+2026-06-27T00:20:31:   code: 'EADDRINUSE',
+2026-06-27T00:20:31:   errno: -98,
+2026-06-27T00:20:31:   syscall: 'listen',
+2026-06-27T00:20:31:   address: '0.0.0.0',
+2026-06-27T00:20:31:   port: 5000
+2026-06-27T00:20:31: }
+2026-06-27T00:20:45: (node:7351) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:20:45: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:20:47: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+2026-06-27T00:20:47:     at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+2026-06-27T00:20:47:     at listenInCluster (node:net:1997:12)
+2026-06-27T00:20:47:     at node:net:2206:7
+2026-06-27T00:20:47:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+2026-06-27T00:20:47:   code: 'EADDRINUSE',
+2026-06-27T00:20:47:   errno: -98,
+2026-06-27T00:20:47:   syscall: 'listen',
+2026-06-27T00:20:47:   address: '0.0.0.0',
+2026-06-27T00:20:47:   port: 5000
+2026-06-27T00:20:47: }
+2026-06-27T00:21:01: (node:7369) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:21:01: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:21:13: (node:7451) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:21:13: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:23:06: (node:7703) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:23:06: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:23:31: (node:7749) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:23:31: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-27T00:24:15: (node:7913) [MONGOOSE] Warning: Duplicate schema index on {"barcode":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+2026-06-27T00:24:15: (Use `node --trace-warnings ...` to show where the warning was created)
