@@ -124,7 +124,7 @@ app.use('/api/v1/admin',     adminRoutes);
 app.get('/health', (req, res) => {
   res.json({
     status:   'OK',
-    app:      'MiniBazar ERP',
+    app:      'Mini Manager ERP',
     version:  '3.0.0',
     env:      process.env.NODE_ENV || 'development',
     time:     new Date().toISOString(),
@@ -155,7 +155,7 @@ const startServer = async () => {
 
     const PORT = process.env.PORT || 5000;
     httpServer.listen(PORT, '0.0.0.0', () => {
-      logger.info(`🚀 MiniBazar ERP running on port ${PORT}`);
+      logger.info(`🚀 Mini Manager ERP running on port ${PORT}`);
       logger.info(`📧 Email: Resend=${!!process.env.RESEND_API_KEY} Gmail=${!!process.env.GMAIL_USER}`);
       logger.info(`🌐 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
     });

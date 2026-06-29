@@ -54,7 +54,7 @@ export const register = async (req, res, next) => {
     const shop = await Shop.create({
       name:            shopName.trim(),
       ownerName:       ownerName.trim(),
-      email:           email?.toLowerCase().trim() || `${cleanPhone}@minibazar.local`,
+      email:           email?.toLowerCase().trim() || `${cleanPhone}@minimanager.local`,
       password,
       phone:           cleanPhone,
       address:         address?.trim(),

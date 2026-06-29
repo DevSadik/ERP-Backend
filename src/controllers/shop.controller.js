@@ -1,6 +1,7 @@
 import jwt            from 'jsonwebtoken';
 import Product        from '../models/Product.model.js';
 import CentralProduct from '../models/CentralProduct.model.js';
+import PendingProduct  from '../models/PendingProduct.model.js';
 import StockIn        from '../models/StockIn.model.js';
 import StockOut       from '../models/StockOut.model.js';
 import CreditLedger   from '../models/CreditLedger.model.js';
@@ -122,6 +123,38 @@ export const createProduct = async (req, res, next) => {
       shop: req.shopId,
       isCentral: false,
     });
+
+    // Crowd-sourced catalog: if this product has a NEW barcode (not already in
+    // the central catalog), submit its catalog info for admin review. The
+    // product is ALWAYS kept in the shop's own stock regardless. Only catalog
+    // info is shared — never cost price or stock.
+    const bc = (req.body.barcode || '').trim();
+    if (bc) {
+      try {
+        const inCentral = await CentralProduct.findOne({ barcode: bc });
+        if (!inCentral) {
+          // upsert so the same barcode never creates two pending rows
+          await PendingProduct.updateOne(
+            { barcode: bc },
+            {
+              $setOnInsert: {
+                barcode:  bc,
+                name:     product.name,
+                company:  product.company || '',
+                category: product.category || 'General',
+                unit:     product.unit || 'pcs',
+                mrp:      product.salePrice || product.mrp || 0,
+                shop:     req.shopId,
+                shopName: req.shop?.shopName || '',
+                status:   'pending',
+              },
+            },
+            { upsert: true }
+          );
+        }
+      } catch (_) { /* never block product creation on pending-submit failure */ }
+    }
+
     ok(res, product, 'পণ্য তৈরি হয়েছে।');
   } catch (e) { next(e); }
 };

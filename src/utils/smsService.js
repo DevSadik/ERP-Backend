@@ -75,7 +75,7 @@ const sendSMS = (number, message) => new Promise((resolve, reject) => {
 // ── Send OTP ──────────────────────────────────────────────────────────────────
 export const sendOtpSMS = async (phone, otp) => {
   // Keep message simple. Some operators block messages with certain words.
-  const message = 'Your MiniBazar ERP verification code is ' + otp;
+  const message = 'Your Mini Manager ERP verification code is ' + otp;
   return await sendSMS(phone, message);
 };
 

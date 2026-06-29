@@ -1,4 +1,5 @@
 import CentralProduct from '../models/CentralProduct.model.js';
+import PendingProduct  from '../models/PendingProduct.model.js';
 import Shop           from '../models/Shop.model.js';
 
 const ok  = (res, data, msg = 'OK') => res.json({ success: true, message: msg, data });
@@ -148,5 +149,43 @@ export const updateShopPlan = async (req, res, next) => {
 
     const updated = await Shop.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
     ok(res, updated, 'দোকানের plan আপডেট হয়েছে।');
+  } catch (e) { next(e); }
+};
+
+// ── Pending products (crowd-sourced submissions awaiting review) ──────────────
+export const listPending = async (req, res, next) => {
+  try {
+    const pending = await PendingProduct.find({ status: 'pending' }).sort({ createdAt: -1 });
+    ok(res, pending);
+  } catch (e) { next(e); }
+};
+
+export const approvePending = async (req, res, next) => {
+  try {
+    const p = await PendingProduct.findById(req.params.id);
+    if (!p) return err(res, 404, 'Pending পণ্য পাওয়া যায়নি।');
+
+    // Move to central catalog if its barcode isn't already there
+    const exists = await CentralProduct.findOne({ barcode: p.barcode });
+    if (!exists) {
+      await CentralProduct.create({
+        name: p.name, barcode: p.barcode, company: p.company,
+        category: p.category, unit: p.unit, mrp: p.mrp,
+      });
+    }
+    p.status = 'approved';
+    await p.save();
+    ok(res, p, 'অনুমোদিত — কেন্দ্রীয় ক্যাটালগে যোগ হয়েছে।');
+  } catch (e) { next(e); }
+};
+
+export const rejectPending = async (req, res, next) => {
+  try {
+    const p = await PendingProduct.findByIdAndUpdate(
+      req.params.id, { status: 'rejected' }, { new: true }
+    );
+    if (!p) return err(res, 404, 'Pending পণ্য পাওয়া যায়নি।');
+    // Rejected: not added to central. The shop keeps it in their own stock.
+    ok(res, p, 'বাতিল করা হয়েছে — কেন্দ্রীয় ক্যাটালগে যায়নি।');
   } catch (e) { next(e); }
 };

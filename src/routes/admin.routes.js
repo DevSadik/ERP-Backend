@@ -11,6 +11,9 @@ router.post('/central',           ctrl.createCentral);
 router.put('/central/:id',        ctrl.updateCentral);
 router.delete('/central/:id',     ctrl.deleteCentral);
 router.get('/central-meta',       ctrl.getCentralMeta);
+router.get('/pending',            ctrl.listPending);
+router.put('/pending/:id/approve', ctrl.approvePending);
+router.put('/pending/:id/reject',  ctrl.rejectPending);
 router.get('/shops',              ctrl.listShops);
 router.put('/shops/:id/plan',     ctrl.updateShopPlan);
 
