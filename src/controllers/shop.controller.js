@@ -129,9 +129,11 @@ export const createProduct = async (req, res, next) => {
     // product is ALWAYS kept in the shop's own stock regardless. Only catalog
     // info is shared — never cost price or stock.
     const bc = (req.body.barcode || '').trim();
+    console.log('🆕 createProduct. Barcode:', JSON.stringify(bc));
     if (bc) {
       try {
         const inCentral = await CentralProduct.findOne({ barcode: bc });
+        console.log(inCentral ? '  → in central, skip' : '  → NOT in central, adding pending');
         if (!inCentral) {
           // upsert so the same barcode never creates two pending rows
           await PendingProduct.updateOne(
@@ -273,14 +275,15 @@ export const createStockIn = async (req, res, next) => {
         productId = newProd._id;
 
         // Crowd-sourced catalog: if this NEW product has a barcode that is not
-        // already in the central catalog, submit its catalog info (no price/stock)
-        // for admin review. The product stays in the shop's own stock regardless.
+        // already in the central catalog, submit its catalog info for admin review.
         const bc = (barcode || '').trim();
+        console.log('📦 StockIn new product created. Barcode:', JSON.stringify(bc));
         if (bc) {
           try {
             const inCentral = await CentralProduct.findOne({ barcode: bc });
+            console.log(inCentral ? '  → Already in central, skip pending' : '  → NOT in central, adding to pending');
             if (!inCentral) {
-              await PendingProduct.updateOne(
+              const result = await PendingProduct.updateOne(
                 { barcode: bc },
                 {
                   $setOnInsert: {
@@ -297,8 +300,9 @@ export const createStockIn = async (req, res, next) => {
                 },
                 { upsert: true }
               );
+              console.log('  ✅ Pending result:', JSON.stringify(result));
             }
-          } catch (_) { /* never block stock-in on pending-submit failure */ }
+          } catch (e) { console.log('  ❌ Pending error:', e.message); }
         }
       }
     }

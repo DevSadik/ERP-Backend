@@ -156,6 +156,7 @@ export const updateShopPlan = async (req, res, next) => {
 export const listPending = async (req, res, next) => {
   try {
     const pending = await PendingProduct.find({ status: 'pending' }).sort({ createdAt: -1 });
+    console.log(`📋 Admin listPending → ${pending.length} pending products found`);
     ok(res, pending);
   } catch (e) { next(e); }
 };
