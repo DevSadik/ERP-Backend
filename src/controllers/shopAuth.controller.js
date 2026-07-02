@@ -214,10 +214,10 @@ export const resetPassword = async (req, res, next) => {
     const shop = await Shop.findOne({ phone: cleanPhone });
     if (!shop) return err(res, 404, 'অ্যাকাউন্ট পাওয়া যায়নি।');
 
-    if (shop.phoneOtp !== String(otp).trim())
+    if (String(shop.phoneOtp).trim() !== String(otp).trim())
       return err(res, 400, 'OTP ভুল হয়েছে।');
-    if (shop.phoneOtpExpires < new Date())
-      return err(res, 400, 'OTP-এর মেয়াদ শেষ।');
+    if (new Date(shop.phoneOtpExpires) < new Date())
+      return err(res, 400, 'OTP-এর মেয়াদ শেষ। নতুন OTP নিন।');
 
     shop.password = password;
     await shop.save();

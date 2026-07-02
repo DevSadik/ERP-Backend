@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/utils/seeder.js"
+    "seed": "node src/utils/seeder.js",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart backend",
+    "pm2:logs": "pm2 logs backend",
+    "pm2:stop": "pm2 stop backend"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

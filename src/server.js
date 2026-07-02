@@ -16,6 +16,7 @@ import authRoutes     from './routes/auth.routes.js';
 import shopRoutes     from './routes/shop.routes.js';
 import customerRoutes from './routes/customer.routes.js';
 import adminRoutes    from './routes/admin.routes.js';
+import paymentRoutes  from './routes/payment.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import logger         from './utils/logger.js';
 
@@ -119,6 +120,7 @@ app.use('/api/v1/auth',      authRoutes);
 app.use('/api/v1/shop',      shopRoutes);
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/admin',     adminRoutes);
+app.use('/api/v1/payment',   paymentRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {

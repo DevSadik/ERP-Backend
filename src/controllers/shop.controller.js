@@ -271,6 +271,35 @@ export const createStockIn = async (req, res, next) => {
           sku: sku || `SKU-${Date.now()}`, isCentral: false,
         });
         productId = newProd._id;
+
+        // Crowd-sourced catalog: if this NEW product has a barcode that is not
+        // already in the central catalog, submit its catalog info (no price/stock)
+        // for admin review. The product stays in the shop's own stock regardless.
+        const bc = (barcode || '').trim();
+        if (bc) {
+          try {
+            const inCentral = await CentralProduct.findOne({ barcode: bc });
+            if (!inCentral) {
+              await PendingProduct.updateOne(
+                { barcode: bc },
+                {
+                  $setOnInsert: {
+                    barcode:  bc,
+                    name:     productName,
+                    company:  company || '',
+                    category: category || 'General',
+                    unit:     unit || 'pcs',
+                    mrp:      +mrp || +salePrice || 0,
+                    shop:     shopId,
+                    shopName: req.shop?.shopName || '',
+                    status:   'pending',
+                  },
+                },
+                { upsert: true }
+              );
+            }
+          } catch (_) { /* never block stock-in on pending-submit failure */ }
+        }
       }
     }
 
